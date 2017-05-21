@@ -4,16 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Evenement;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\View;
+use Illuminate\Html\HtmlFacade;
 
 
 class EvenementController extends Controller
 {
-    public function __construct()
-    {
-        //$this->>middleware("name");
-    }
-
     /**
      * Display a listing of the resource.
      *
@@ -21,11 +17,15 @@ class EvenementController extends Controller
      */
     public function index()
     {
-        $evenement = DB::table('evenement')->get();
+        $evenement = Evenement::all();
 
-        foreach ($evenement as $row) {
-            echo "<p>$row->naam</p>";
-        }
+        return View::make("index") -> with("evenement", $evenement);
+
+
+    }
+
+    public function create() {
+        return View::make("create");
 
     }
 
@@ -37,19 +37,32 @@ class EvenementController extends Controller
      */
     public function store(Request $request)
     {
-        $evenement = new Evenement();
-        $evenement->id = $request->id;
-        $evenement->naam = $request->naam;
-        $evenement->beginDatum = $request->beginDatum;
-        $evenement->eindDatum = $request->eindDatum;
-        $evenement->klantId = $request->klantId;
-        $evenement->prijs = $request->prijs;
-        $evenement->save();
+        $rules = array (
+            "name" => "required",
+            "beginDatum" => "required|date",
+            "eindDatum" => "required|date",
+            "klantId" => "required|numeric",
+            "prijs" => "required|numeric"
+        );
 
-        return "<p>$evenement->naam</p>";
+        $validator = Validator::make(Input::all(),$rules);
 
-        //return response()->json(['id' => '3', 'naam' => 'Coyote Ugly', 'beginDatum' => '2017-06-01', 'eindDatum' => '2017-06-02',
-            //'klantId' => '1', 'prijs' => '100']);
+        if ($validator->fails()) {
+            return redirect::to("create")
+                ->withErrors($validator)
+                ->withInput(Input::except("password"));
+        } else {
+            $evenement = new Evenement;
+            $evenement->naam = Input::get("naam");
+            $evenement->beginDatum = Input::get("beginDatum");
+            $evenement->eindDatum = Input::get("eindDatum");
+            $evenement->klantId = Input::get("klantId");
+            $evenement->prijs = Input::get("prijs");
+            $evenement.save();
+
+            Session::flash("message", "Successfully created evenement");
+            return Redirect::to("evenement");
+        }
     }
 
     /**
@@ -60,9 +73,15 @@ class EvenementController extends Controller
      */
     public function show($id)
     {
-        $evenement = DB::table('evenement')->where('id', $id)->first();
+        $evenement = Evenement::find($id);
 
-        return "<h1>$evenement->naam</h1>";
+            return View::make("show") ->with("evenement", $evenement);
+    }
+
+    public function edit($id) {
+        $evenement = Evenement::find($id);
+
+        return View::make("edit")->with("evenement", $evenement);
     }
 
     /**
@@ -72,9 +91,9 @@ class EvenementController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update($id)
     {
-        return "It Works";
+
     }
 
     /**
@@ -85,7 +104,6 @@ class EvenementController extends Controller
      */
     public function destroy($id)
     {
-        DB::table('evenement')->where('id', $id)->delete();
-        return "";
+
     }
 }
