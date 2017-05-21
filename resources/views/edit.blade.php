@@ -41,7 +41,7 @@
 
     <div class="form-group">
         {{ Form::label('klantId', 'KlantId') }}
-        {{ Form::text('KlantId', null, array('class' => 'form-control')) }}
+        {{ Form::number('klantId', null, array('class' => 'form-control')) }}
     </div>
 
     <div class="form-group">

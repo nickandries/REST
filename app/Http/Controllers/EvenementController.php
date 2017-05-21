@@ -6,7 +6,8 @@ use App\Evenement;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\View;
 use Illuminate\Html\HtmlFacade;
-
+use Illuminate\Support\Facades\Input;
+use Illuminate\Support\Facades\Redirect;
 
 class EvenementController extends Controller
 {
@@ -37,6 +38,7 @@ class EvenementController extends Controller
      */
     public function store(Request $request)
     {
+/*
         $rules = array (
             "name" => "required",
             "beginDatum" => "required|date",
@@ -44,25 +46,17 @@ class EvenementController extends Controller
             "klantId" => "required|numeric",
             "prijs" => "required|numeric"
         );
+*/
 
-        $validator = Validator::make(Input::all(),$rules);
 
-        if ($validator->fails()) {
-            return redirect::to("create")
-                ->withErrors($validator)
-                ->withInput(Input::except("password"));
-        } else {
             $evenement = new Evenement;
             $evenement->naam = Input::get("naam");
             $evenement->beginDatum = Input::get("beginDatum");
             $evenement->eindDatum = Input::get("eindDatum");
             $evenement->klantId = Input::get("klantId");
             $evenement->prijs = Input::get("prijs");
-            $evenement.save();
-
-            Session::flash("message", "Successfully created evenement");
+            $evenement->save();
             return Redirect::to("evenement");
-        }
     }
 
     /**
@@ -91,9 +85,17 @@ class EvenementController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update($id)
+    public function update(Request $request, $id)
     {
-
+       // Evenement::where('id', $id)->update($request->all());
+        $evenement = Evenement::find($id);
+            $evenement->naam = $request->get('naam');
+            $evenement->beginDatum =  $request->get('beginDatum');
+            $evenement->eindDatum =  $request->get('eindDatum');
+            $evenement->klantId =  $request->get('klantId');
+            $evenement->prijs =  $request->get('prijs');
+            $evenement->save();
+        return  Redirect::to("evenement");
     }
 
     /**
